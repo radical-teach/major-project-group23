@@ -4,7 +4,29 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from tkinter.messagebox import showinfo
+import re
 import requests
+
+netid_passwords = [("jlb661", "Joe"), ("bn198", "Beaman"), ('at891', 'Avery'), ('ccd83', 'Christopher'), ('fak38','Faraz')]
+RUIDs = ['194007666', '194295928', '194295834','183747269', '117302075']
+RUID_pattern = re.compile("[0-9]{9}")
+while True:
+    signin_Option = input("Would you like to sign in via netid/password or RUID? Enter 1 for netid/Password OR 2 for RUID: ")
+    if int(signin_Option) == 1:
+        netid = input("Enter netid: ")
+        password = input("Enter password: ")
+        if (netid,password) in netid_passwords:
+            break
+        else:
+            print("Invalid credentials")
+    elif int(signin_Option) == 2:
+        RUID = input("Enter RUID: ")
+        if RUID_pattern.match(RUID) and RUID in RUIDs:
+            break
+        else:
+            print("Invalid credentials")
+    else:
+        print("Invalid input, Please enter 1 or 2")
 
 homepage = tk.Tk()
 
@@ -15,42 +37,38 @@ homepageWindow = Canvas(homepage, width=600, height=600)
 homepageWindow.pack(fill="both", expand=True)
 
 
-
-
-
 homepageWindow.create_text(300, 50, text="This Program Will Show You the Different Bus Routes", font=("Times New Roman", 20))
 homepageWindow.create_text(300, 75, text="Of Rutgers New Brunswick", font=("Arial", 20))
 homepageWindow.create_text(300, 100, text="Please Select the Button Below to View Buses", font=("Times New Roman", 20))
-
-
-
-
 
 homepage.title("RU Riding Application")
 
 
 
-##############
+
 
 def busRoutes():
-    routesWin = tk.Tk()
-
-    # routesWin.geometry("1920x1080")
-    routesWin.title("Routes")
-    label = tk.Label(routesWin, text="Choose a Route")
-    label.grid(row=0, column=0, padx=8, pady=8)
-    global routesMenu
-    routesMenu = ttk.Combobox(routesWin, value=routesNames, width=20)
-    routesMenu.grid(row=0, column=1, padx=8, pady=8)
-
-    global routesselect
-    routesselect = Button(routesWin, text="Submit", command=busStopList)
-    routesselect.grid(row=5, column=1, padx=8, pady=8)
-
     homepageWindow.create_text(300, 400, text="Please Select Bus Route.", font=("Arial", 20))
     homepageWindow.create_text(300, 450, text="Then enter current stop and destination.", font=("Arial", 20))
 
-    routesWin.mainloop()
+    routesWindow = tk.Tk()
+
+    routesWindow.title("Bus Routes")
+    routePrompt = tk.Label(routesWindow, text="Choose a Route")
+    routePrompt.grid(row=0, column=0, padx=8, pady=8)
+
+
+
+    global routeEnter
+    routeEnter = Button(routesWindow, text="Submit", command=busStopList)
+    routeEnter.grid(row=5, column=1, padx=8, pady=8)
+
+    global routesMenu
+    routesMenu = ttk.Combobox(routesWindow, value=routesNames, width=20)
+    routesMenu.grid(row=0, column=1, padx=8, pady=8)
+
+
+    routesWindow.mainloop()
 
 
 studentPortal = tk.Button(homepage, text="Student Portal", command=busRoutes, font=("Arial", 20, 'bold'))
@@ -76,50 +94,52 @@ def busSwitch(busName):
     }
     return busesRU.get(busName, "Invalid Argument")
 
+
+
 def busStopList():
     if (routesMenu.get() == ""):
         showinfo("Error", "Please Select a Bus Route")
 
     else:
-        stopWindow = tk.Tk()
+        stopsWindow = tk.Tk()
 
-        stopWindow.title("Bus Stops")
-        startLabel = tk.Label(stopWindow, text="Choose First Stop")
+        stopsWindow.title("Bus Stops")
+        startLabel = tk.Label(stopsWindow, text="Choose First Stop")
         startLabel.grid(row=0, column=0, padx=8, pady=8)
 
-        global options
-        index = busSwitch(routesMenu.get())
-        options = LOR[index]
+        global opt
+        i = busSwitch(routesMenu.get())
+        opt = LOR[i]
 
-        global routeSelectedNames
-        routeSelectedNames = routesListList[index]
+        global selectNames
+        selectNames = routesListList[i]
 
         global routeSelected
-        routeSelected = routeList[index]
+        routeSelected = routeList[i]
 
         global firstselected
         firstselected = StringVar()
-        firstselected.set(options[0])
+        firstselected.set(opt[0])
 
-        global firststopsmenu
-        firststopsmenu = ttk.Combobox(stopWindow, value=options, width=50)
-        firststopsmenu.grid(row=0, column=1, padx=8, pady=8)
+        global firstStopMenu
+        firstStopMenu = ttk.Combobox(stopsWindow, value=opt, width=50)
+        firstStopMenu.grid(row=0, column=1, padx=8, pady=8)
 
         def change_dropdown1(*args):
             print(firstselected.get())
 
         firstselected.trace('w', change_dropdown1)
 
-        destinationLabel = tk.Label(stopWindow, text="Choose Second Stop")
+        destinationLabel = tk.Label(stopsWindow, text="Choose Second Stop")
         destinationLabel.grid(row=1, column=0, padx=8, pady=8)
 
         global secondselected
         secondselected = StringVar()
-        secondselected.set(options[0])
+        secondselected.set(opt[0])
 
-        global secondstopsmenu
-        secondstopsmenu = ttk.Combobox(stopWindow, value=options, width=50)
-        secondstopsmenu.grid(row=1, column=1, padx=8, pady=8)
+        global secStopMenu
+        secStopMenu = ttk.Combobox(stopsWindow, value=opt, width=50)
+        secStopMenu.grid(row=1, column=1, padx=8, pady=8)
 
         def change_dropdown(*args):
             print(secondselected.get())
@@ -127,100 +147,91 @@ def busStopList():
         secondselected.trace('w', change_dropdown)
 
         global select
-        select = Button(stopWindow, text="Submit", command=submit)
+        select = Button(stopsWindow, text="Submit", command=enterPrompt)
         select.grid(row=5, column=1, padx=8, pady=8)
 
-        stopWindow.mainloop()
+        stopsWindow.mainloop()
 
 
 
-def submit():
-    if (firststopsmenu.get() == "" or secondstopsmenu.get() == ""):
-        showinfo("Error", "Both input values need to be defined")
+def enterPrompt():
+    if (firstStopMenu.get() == "" or secStopMenu.get() == ""):
+        showinfo("Error", "First Stop and Second Stop Inputs Have To Be Defined")
 
-    elif (firststopsmenu.get() == secondstopsmenu.get()):
-        showinfo("Error", "You can't select the same stop as the origin and destination. Please try again with a different input.")
+    elif (firstStopMenu.get() == secStopMenu.get()):
+        showinfo("Error", "Please Try Again with Two Different Inputs")
 
     else:
-        stopsOutput = tk.Tk()
+        outputStop = tk.Tk()
 
-        stopsOutput.geometry("675x600")
-        stopsOutput.title("Route Summary")
+        outputStop.geometry("800x800")
+        outputStop.title("Route Summary")
 
-        distanceBetweenStopsStringList = distanceBetweenStops(firststopsmenu.get(), secondstopsmenu.get())
+        distBtwnStopsList = distanceBetweenStops(firstStopMenu.get(), secStopMenu.get())
 
-        label1 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[0])
+        label1 = tk.Label(outputStop, text=distBtwnStopsList[0])
         label1.grid(row=0, column=0, padx=8, pady=8)
-
-        label2 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[1])
+        label2 = tk.Label(outputStop, text=distBtwnStopsList[1])
         label2.grid(row=1, column=0, padx=8, pady=8)
-
-        label3 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[2])
+        label3 = tk.Label(outputStop, text=distBtwnStopsList[2])
         label3.grid(row=2, column=0, padx=8, pady=8)
-
-        label4 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[3])
+        label4 = tk.Label(outputStop, text=distBtwnStopsList[3])
         label4.grid(row=3, column=0, padx=8, pady=8)
-
-        label5 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[4])
+        label5 = tk.Label(outputStop, text=distBtwnStopsList[4])
         label5.grid(row=4, column=0, padx=8, pady=8)
-
-        label6 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[5])
+        label6 = tk.Label(outputStop, text=distBtwnStopsList[5])
         label6.grid(row=5, column=0, padx=8, pady=8)
-
-        label7 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[6])
+        label7 = tk.Label(outputStop, text=distBtwnStopsList[6])
         label7.grid(row=6, column=0, padx=8, pady=8)
-
-        label8 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[7])
+        label8 = tk.Label(outputStop, text=distBtwnStopsList[7])
         label8.grid(row=7, column=0, padx=8, pady=8)
-
-        label9 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[8])
+        label9 = tk.Label(outputStop, text=distBtwnStopsList[8])
         label9.grid(row=8, column=0, padx=8, pady=8)
-
-        label10 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[9])
+        label10 = tk.Label(outputStop, text=distBtwnStopsList[9])
         label10.grid(row=9, column=0, padx=8, pady=8)
 
-        label14 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[10])
-        label14.grid(row=10, column=0, padx=8, pady=8)
+        label11 = tk.Label(outputStop, text=distBtwnStopsList[10])
+        label11.grid(row=10, column=0, padx=8, pady=8)
 
-        label15 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[11])
-        label15.grid(row=11, column=0, padx=8, pady=8)
+        label12 = tk.Label(outputStop, text=distBtwnStopsList[11])
+        label12.grid(row=11, column=0, padx=8, pady=8)
 
-        label16 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[12])
-        label16.grid(row=12, column=0, padx=8, pady=8)
+        label13 = tk.Label(outputStop, text=distBtwnStopsList[12])
+        label13.grid(row=12, column=0, padx=8, pady=8)
 
-        label17 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[13])
-        label17.grid(row=13, column=0, padx=8, pady=8)
+        label14 = tk.Label(outputStop, text=distBtwnStopsList[13])
+        label14.grid(row=13, column=0, padx=8, pady=8)
 
-        label18 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[14])
-        label18.grid(row=14, column=0, padx=8, pady=8)
+        label15 = tk.Label(outputStop, text=distBtwnStopsList[14])
+        label15.grid(row=14, column=0, padx=8, pady=8)
 
-        label19 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[15])
-        label19.grid(row=15, column=0, padx=8, pady=8)
+        label16 = tk.Label(outputStop, text=distBtwnStopsList[15])
+        label16.grid(row=15, column=0, padx=8, pady=8)
 
-        label20 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[16])
-        label20.grid(row=16, column=0, padx=8, pady=8)
+        label17 = tk.Label(outputStop, text=distBtwnStopsList[16])
+        label17.grid(row=16, column=0, padx=8, pady=8)
 
-        label21 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[17])
-        label21.grid(row=17, column=0, padx=8, pady=8)
+        label18 = tk.Label(outputStop, text=distBtwnStopsList[17])
+        label18.grid(row=17, column=0, padx=8, pady=8)
 
-        label22 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[18])
-        label22.grid(row=18, column=0, padx=8, pady=8)
+        label19 = tk.Label(outputStop, text=distBtwnStopsList[18])
+        label19.grid(row=18, column=0, padx=8, pady=8)
 
-        label23 = tk.Label(stopsOutput, text=distanceBetweenStopsStringList[19])
-        label23.grid(row=19, column=0, padx=8, pady=8)
+        label20 = tk.Label(outputStop, text=distBtwnStopsList[19])
+        label20.grid(row=19, column=0, padx=8, pady=8)
 
-        stopsOutput.mainloop()
+        outputStop.mainloop()
 
 
-def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
+def distFromBusYou(youIndex, distanceBetweenStopsStringList):
     bus1stopName = routeSelected.bus1.currentStop.name
     bus2stopName = routeSelected.bus2.currentStop.name
     bus3stopName = routeSelected.bus3.currentStop.name
     yourStopName = routeSelected.stopArray[youIndex].name
 
-    bus1Index = routeSelectedNames.index(bus1stopName)
-    bus2Index = routeSelectedNames.index(bus2stopName)
-    bus3Index = routeSelectedNames.index(bus3stopName)
+    bus1Index = selectNames.index(bus1stopName)
+    bus2Index = selectNames.index(bus2stopName)
+    bus3Index = selectNames.index(bus3stopName)
 
     print("The first bus is at " + bus1stopName)
     print("The second bus is at " + bus2stopName)
@@ -233,19 +244,16 @@ def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
     global closestStopNameGlobal
 
     if (bus1Index == youIndex):
-        #  print("busAlreadyAtStop")
 
         distanceA = 0
         distanceBetweenStopsStringList.append("There is a bus at stop " + yourStopName)
         return distanceBetweenStopsStringList
     elif (bus2Index == youIndex):
         distanceBetweenStopsStringList.append("There is a bus at stop " + yourStopName)
-        #   print("busAlreadyAtStop")
         distanceA = 0
         return distanceBetweenStopsStringList
     elif (bus3Index == youIndex):
         distanceBetweenStopsStringList.append("There is a bus at stop " + yourStopName)
-        #   print("busAlreadyAtStop")
         distanceA = 0
         return distanceBetweenStopsStringList
     elif (bus1Index < youIndex and bus2Index < youIndex and bus3Index < youIndex):
@@ -268,12 +276,10 @@ def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
         closerStopName = bus2stopName
         i = bus2Index
 
-    #  print("The closest bus is at stop " + closerStopName)
     distanceBetweenStopsStringList.append("The closest bus is at stop " + closerStopName)
     global resultStringA
     resultStringA = "The closest bus is at stop " + closerStopName
 
-    #  print("The bus will depart from " + closerStopName + " at " + str(datetime.datetime.now().time()))
     distanceBetweenStopsStringList.append(
         "The bus will depart from " + closerStopName + " at " + str(datetime.datetime.now().time()))
 
@@ -282,12 +288,11 @@ def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
     while i != youIndex:
         if i == (len(routeSelected.stopArray) - 1):
             distance += int(
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[0])
-            #  print("The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[0].name + " in " + getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
+                getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[0].location).split(" ")[0])
             distanceBetweenStopsStringList.append(
                 "The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[
                     0].name + " in " +
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[
+                getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[0].location).split(" ")[
                     0] + " minutes, arriving at " + str(
                     (currentDateTime + datetime.timedelta(minutes=distance)).time()))
 
@@ -295,24 +300,21 @@ def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
                 i = 0
         else:
             distance += int(
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i + 1].address).split(" ")[0])
-            #    print("The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[i+1].name + " in " + getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i+1].address).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
+                getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[i + 1].location).split(" ")[0])
             distanceBetweenStopsStringList.append(
                 "The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[
                     i + 1].name + " in " +
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i + 1].address).split(" ")[
+                getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[i + 1].location).split(" ")[
                     0] + " minutes, arriving at " + str(
                     (currentDateTime + datetime.timedelta(minutes=distance)).time()))
             if (i == (len(routeSelected.stopArray) - 2) and i + 1 != youIndex):
-                #  print("MY NAME JEFF")
                 distance += int(
-                    getDistance(routeSelected.stopArray[i + 1].address, routeSelected.stopArray[0].address).split(" ")[
+                    getDistance(routeSelected.stopArray[i + 1].location, routeSelected.stopArray[0].location).split(" ")[
                         0])
-                #  print("The bus will go from " + str(routeSelected.stopArray[i+1].name) + " to " + routeSelected.stopArray[0].name + " in " + getDistance(routeSelected.stopArray[i+1].address, routeSelected.stopArray[0].address).split(" ")[0] + " minutes, arriving at " +  str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
                 distanceBetweenStopsStringList.append(
                     "The bus will go from " + str(routeSelected.stopArray[i + 1].name) + " to " +
                     routeSelected.stopArray[0].name + " in " +
-                    getDistance(routeSelected.stopArray[i + 1].address, routeSelected.stopArray[0].address).split(" ")[
+                    getDistance(routeSelected.stopArray[i + 1].location, routeSelected.stopArray[0].location).split(" ")[
                         0] + " minutes, arriving at " + str(
                         (currentDateTime + datetime.timedelta(minutes=distance)).time()))
                 if (youIndex == i + 1):
@@ -321,114 +323,77 @@ def distanceFromBusToYou(youIndex, distanceBetweenStopsStringList):
             else:
                 i = i + 1
 
-    # print("The bus will be at your stop at " + str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
     distanceBetweenStopsStringList.append("The bus is at your stop. You get on at " + str(
         (currentDateTime + datetime.timedelta(minutes=distance)).time()))
 
     distanceA = distance
-    #  print("distance is " + str(distance))
-    #   print("distanceA is " + str(distanceA))
+
 
     return distanceBetweenStopsStringList
 
 
 def distanceBetweenStops(stop1Name, stop2Name):
-    # distanceA = 0
 
-    index1 = routeSelectedNames.index(stop1Name)
-    index2 = routeSelectedNames.index(stop2Name)
+    i1 = selectNames.index(stop1Name)
+    i2 = selectNames.index(stop2Name)
 
-    distanceBetweenStopsStringList = []
+    distBtwnList = []
 
-    distanceBetweenStopsStringList = distanceFromBusToYou(index1, distanceBetweenStopsStringList)
+    distBtwnList = distFromBusYou(i1, distBtwnList)
 
-    i = index1
-    print("Distance a is " + str(distanceA))
+    i = i1
 
     distance = distanceA
 
-    while i != index2:
+    while i != i2:
         if i == (len(routeSelected.stopArray) - 1):
-            distance += int(
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[0])
-            # print("The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[0].name + " in " + getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
-            distanceBetweenStopsStringList.append(
-                "The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[
-                    0].name + " in " +
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[0].address).split(" ")[
-                    0] + " minutes, arriving at " + str(
-                    (currentDateTime + datetime.timedelta(minutes=distance)).time()))
-            if i != index2:
+            distance += int(getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[0].location).split(" ")[0])
+
+            distBtwnList.append("The Bus us will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[0].name + " in " + getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[0].location).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes=distance)).time()))
+            if i != i2:
                 i = 0
         else:
             distance += int(
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i + 1].address).split(" ")[0])
-            #   print("The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[i+1].name + " in " + getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i+1].address).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
-            distanceBetweenStopsStringList.append(
-                "The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[
-                    i + 1].name + " in " +
-                getDistance(routeSelected.stopArray[i].address, routeSelected.stopArray[i + 1].address).split(" ")[
-                    0] + " minutes, arriving at " + str(
-                    (currentDateTime + datetime.timedelta(minutes=distance)).time()))
-            if (i == (len(routeSelected.stopArray) - 2) and i + 1 != index2):
-                #   print("MY NAME JEFF")
+                getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[i + 1].location).split(" ")[0])
+            distBtwnList.append("The bus will go from " + str(routeSelected.stopArray[i].name) + " to " + routeSelected.stopArray[i + 1].name + " in " +getDistance(routeSelected.stopArray[i].location, routeSelected.stopArray[i + 1].location).split(" ")[0] + " minutes, arriving at " + str((currentDateTime + datetime.timedelta(minutes=distance)).time()))
+            if (i == (len(routeSelected.stopArray) - 2) and i + 1 != i2):
                 distance += int(
-                    getDistance(routeSelected.stopArray[i + 1].address, routeSelected.stopArray[0].address).split(" ")[
+                    getDistance(routeSelected.stopArray[i + 1].location, routeSelected.stopArray[0].location).split(" ")[
                         0])
-                #    print("The bus will go from " + str(routeSelected.stopArray[i+1].name) + " to " + routeSelected.stopArray[0].name + " in " + getDistance(routeSelected.stopArray[i+1].address, routeSelected.stopArray[0].address).split(" ")[0] + " minutes, arriving at " +  str((currentDateTime + datetime.timedelta(minutes = distance)).time()))
-                distanceBetweenStopsStringList.append(
+                distBtwnList.append(
                     "The bus will go from " + str(routeSelected.stopArray[i + 1].name) + " to " +
                     routeSelected.stopArray[0].name + " in " +
-                    getDistance(routeSelected.stopArray[i + 1].address, routeSelected.stopArray[0].address).split(" ")[
+                    getDistance(routeSelected.stopArray[i + 1].location, routeSelected.stopArray[0].location).split(" ")[
                         0] + " minutes, arriving at " + str(
                         (currentDateTime + datetime.timedelta(minutes=distance)).time()))
-                if (index2 == i + 1):
+                if (i2 == i + 1):
                     break
                 i = 0
             else:
                 i = i + 1
 
-    distanceBetweenStopsStringList.append("The trip will take you a total of " + str(
+    distBtwnList.append("The trip will take you a total of " + str(
         distance) + " minutes to arrive to " + stop2Name + ", and you will arrive at " + str(
         (currentDateTime + datetime.timedelta(minutes=distance)).time()))
 
-    # print(distanceBetweenStopsStringList)      ##########################################################################################################################################################################################
-    # return distance
-
-    for j in range(len(distanceBetweenStopsStringList), 20):
-        distanceBetweenStopsStringList.append("")
+    for j in range(len(distBtwnList), 20):
+        distBtwnList.append("")
 
     totalDist = distance
-    return distanceBetweenStopsStringList
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return distBtwnList
 
 
 
 class busStop:
-    def __init__(self, name, address):
+    def __init__(self, name, location):
         self.name = name
-        self.address = address
+        self.location = location
 
 
 class theBus:
-    def __init__(self,
-                 currentStop):  ################################################################################################################################################################################################################################################
+    def __init__(self,currentStop):
         self.currentStop = currentStop
         self.now = datetime.datetime.now()
-    # print(self.now)
 
 
 class busStopRoute:
@@ -443,10 +408,10 @@ class busStopRoute:
 
     def printList(self):
         for i in self.stopArray:
-            print(i.name + ", " + i.address)
+            print(i.name + ", " + i.location)
 
     def getAddr(self, index):
-        return self.stopArray[index].address
+        return self.stopArray[index].location
 
     def nextStop(self, busStop):
         for i in range(len(self.stopArray) - 1):
@@ -458,19 +423,11 @@ class busStopRoute:
 
 
 
-
-
-
-
-
-
-
-
 def getDistance(origin, destination):
-    apikey = "AIzaSyA7_ZgzwWNDelS0gUj3Y2mZ23CgIr383mQ"
     url1 = "https://maps.googleapis.com/maps/api/distancematrix/json?destinations="
     url2 = "&origins="
     url3 = "&key="
+    apikey = "AIzaSyA7_ZgzwWNDelS0gUj3Y2mZ23CgIr383mQ"
 
     url_full = url1 + destination + url2 + origin + url3 + apikey
 
@@ -514,7 +471,6 @@ Yard = busStop("The Yard", "40 College Ave, New Brunswick, NJ 08901")
 
 
 
-############################
 
 routesNames = [
     "REXL",

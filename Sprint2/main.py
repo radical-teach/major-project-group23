@@ -4,6 +4,31 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from tkinter.messagebox import showinfo
+import re
+
+netid_passwords = [("jlb661", "Joe"), ("bn198", "Beaman"), ('at891', 'Avery'), ('ccd83', 'Christopher'), ('fak38','Faraz')]
+RUIDs = ['194007666', '194295928', '194295834','183747269', '117302075']
+RUID_pattern = re.compile("[0-9]{9}")
+while True:
+    signin_Option = input("Would you like to sign in via netid/password or RUID? Enter 1 for netid/Password OR 2 for RUID: ")
+    if int(signin_Option) == 1:
+        netid = input("Enter netid: ")
+        password = input("Enter password: ")
+        if (netid,password) in netid_passwords:
+            break
+        else:
+            print("Invalid credentials")
+    elif int(signin_Option) == 2:
+        RUID = input("Enter RUID: ")
+        if RUID_pattern.match(RUID) and RUID in RUIDs:
+            break
+        else:
+            print("Invalid credentials")
+    else:
+        print("Invalid input, Please enter 1 or 2")
+
+
+
 
 homepage = tk.Tk()
 homepage.title("RU Riding Application")
@@ -19,7 +44,7 @@ homepageWindow.pack(fill="both", expand=True)
 homepageWindow.create_text(300, 50, text="This Program Will Show You the Different Bus Routes", font=("Times New Roman", 20))
 homepageWindow.create_text(300, 75, text="Of Rutgers New Brunswick", font=("Arial", 20))
 homepageWindow.create_text(300, 100, text="Please Select the Button Below to View Buses", font=("Times New Roman", 20))
-################################
+
 
 
 
@@ -90,23 +115,23 @@ def busStopList():
         startLabel = tk.Label(stopsWindow, text="Select First Stop")
         startLabel.grid(row=0, column=0, padx=8, pady=8)
 
-        global options
-        index = busSwitch(routesMenu.get())
-        options = LOR[index]
+        global opt
+        i = busSwitch(routesMenu.get())
+        opt = LOR[i]
 
-        global routeSelectedNames
-        routeSelectedNames = routesListList[index]
+        global selectedNames
+        selectedNames = routesListList[i]
 
         global routeSelected
-        routeSelected = routeList[index]
+        routeSelected = routeList[i]
 
         global firstselected
         firstselected = StringVar()
-        firstselected.set(options[0])
+        firstselected.set(opt[0])
 
-        global firststopsmenu
-        firststopsmenu = ttk.Combobox(stopsWindow, value=options, width=50)
-        firststopsmenu.grid(row=0, column=1, padx=8, pady=8)
+        global firstStopMenu
+        firstStopMenu = ttk.Combobox(stopsWindow, value=opt, width=50)
+        firstStopMenu.grid(row=0, column=1, padx=8, pady=8)
 
         def change_dropdown1(*args):
             print(firstselected.get())
@@ -118,11 +143,11 @@ def busStopList():
 
         global secondselected
         secondselected = StringVar()
-        secondselected.set(options[0])
+        secondselected.set(opt[0])
 
-        global secondstopsmenu
-        secondstopsmenu = ttk.Combobox(stopsWindow, value=options, width=50)
-        secondstopsmenu.grid(row=1, column=1, padx=8, pady=8)
+        global secStopMenu
+        secStopMenu = ttk.Combobox(stopsWindow, value=opt, width=50)
+        secStopMenu.grid(row=1, column=1, padx=8, pady=8)
 
         def change_dropdown(*args):
             print(secondselected.get())
@@ -138,14 +163,13 @@ def busStopList():
 
 
 def enterPrompt():
-    if (firststopsmenu.get() == "" or secondstopsmenu.get() == ""):
+    if (firstStopMenu.get() == "" or secStopMenu.get() == ""):
         showinfo("Error", "First Stop and Second Stop Inputs Have To Be Defined")
 
-    elif (firststopsmenu.get() == secondstopsmenu.get()):
+    elif (firstStopMenu.get() == secStopMenu.get()):
         showinfo("Error", "Please Try Again with Two Different Inputs")
 
 
-#######################
 class busStop:
     def __init__(self, name, location):
         self.name = name
@@ -169,10 +193,10 @@ class busStopRoute:
 
     def printList(self):
         for i in self.stopArray:
-            print(i.name + ", " + i.address)
+            print(i.name + ", " + i.location)
 
     def getAddr(self, index):
-        return self.stopArray[index].address
+        return self.stopArray[index].location
 
     def nextStop(self, busStop):
         for i in range(len(self.stopArray) - 1):
@@ -181,7 +205,6 @@ class busStopRoute:
             else:
                 return self.stopArray[i + 1]
 
-############################
 
 
 ARC = busStop("Allison Road Classrooms", "607 Allison Rd, Piscataway, NJ 08854")
@@ -208,7 +231,6 @@ Yard = busStop("The Yard", "40 College Ave, New Brunswick, NJ 08901")
 
 
 
-############################
 
 routesNames = [
     "REXL",
